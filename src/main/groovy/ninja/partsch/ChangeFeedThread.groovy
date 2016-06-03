@@ -4,14 +4,19 @@ import com.rethinkdb.gen.ast.Changes
 import com.rethinkdb.gen.exc.ReqlDriverError
 import com.rethinkdb.net.Connection
 import com.rethinkdb.net.Cursor
+import ninja.partsch.exceptions.ChangeFeedException
 
 import java.util.concurrent.CancellationException
+import java.util.concurrent.Phaser
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 
 class ChangeFeedThread extends Thread {
 
     Map<String, Closure> typeHandlerMap
     Cursor changeFeed
     Connection dbConn
+    Phaser readyPhaser
 
     def ChangeFeedThread(Map<String, Closure> typeHandlerMap, Connection dbConn, Changes changes) {
         if(typeHandlerMap == null)
@@ -24,6 +29,7 @@ class ChangeFeedThread extends Thread {
             throw new IllegalArgumentException("cannot create ChangeFeedThread with null changes cursor")
         this.changeFeed = changes.run(dbConn)
         this.changeFeed = changeFeed
+        this.readyPhaser = new Phaser(2)
     }
 
     public void run() {
@@ -47,6 +53,8 @@ class ChangeFeedThread extends Thread {
                     case "state":
                         if (handler != null)
                             handler(feedItem["state"])
+                        if(feedItem["state"] == "ready")
+                            readyPhaser.arrive()
                         break;
                 }
                 // document initialized, added, changed or removed
@@ -71,6 +79,15 @@ class ChangeFeedThread extends Thread {
 
     def stopFeed() {
         dbConn.close()
+    }
+
+    def awaitReady(timeout = 5000) {
+        try {
+            readyPhaser.arrive()
+            readyPhaser.awaitAdvanceInterruptibly(0, timeout, TimeUnit.MILLISECONDS)
+        } catch(TimeoutException te) {
+            throw new ChangeFeedException("awaiting change feeed for ready state timed out after ${timeout} milliseconds", te)
+        }
     }
 
 }
