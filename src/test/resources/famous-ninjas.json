@@ -1,0 +1,47 @@
+[
+  {
+    "id": 1,
+    "name": "Fujibayashi Nagato",
+    "century": 16,
+    "clan": {
+      "name": "Iga",
+      "position": "Leader"
+    }
+  },
+  {
+    "id": 2,
+    "name": "Momochi Sandayu",
+    "century": 16,
+    "clan": {
+      "name": "Iga",
+      "position": "Leader"
+    }
+  },
+  {
+    "id": 3,
+    "name": "Hattori Hanzo",
+    "century": 17,
+    "clan": {
+      "name": "Iga",
+      "position": "Samurai"
+    }
+  },
+  {
+    "id": 4,
+    "name": "Mochizuki Chiyome",
+    "century": 16,
+    "clan": {
+      "name": "Kunoichi",
+      "position": "Ninja"
+    }
+  },
+  {
+    "id": 5,
+    "name": "Fuma Kotaro",
+    "century": 17,
+    "clan": {
+      "name": "Hojo",
+      "position": "Ninja"
+    }
+  }
+]
