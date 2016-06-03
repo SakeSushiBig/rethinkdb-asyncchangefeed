@@ -30,6 +30,8 @@ class ReactionTests extends RethinkDBNinjaTest {
         then:
         sleep(100) // wait for change feed to react
         addedElements.collect {it["name"]} == ["Tony Dancer", "Sherlock Holmes"]
+        cleanup:
+        changeFeed.stopFeed()
     }
 
     def "react to changed doucments"() {
@@ -46,6 +48,8 @@ class ReactionTests extends RethinkDBNinjaTest {
         then:
         sleep(100) // wait for change feed to react
         changedElements.collect {it["name"]} == ["Freddy Mercury"]
+        cleanup:
+        changeFeed.stopFeed()
     }
 
     def "react on initial"() {
@@ -57,6 +61,8 @@ class ReactionTests extends RethinkDBNinjaTest {
         expect:
         sleep(100)
         initialized.collect {it["id"]} .sort() == [1,2,3,4,5]
+        cleanup:
+        changeFeed.stopFeed()
     }
 
     def "react on remove"() {
@@ -73,6 +79,8 @@ class ReactionTests extends RethinkDBNinjaTest {
         then:
         sleep(100)
         removed.sort() == [1,2,3]
+        cleanup:
+        changeFeed.stopFeed()
     }
 
     def "react on any update"() {
@@ -101,6 +109,8 @@ class ReactionTests extends RethinkDBNinjaTest {
         then:
         sleep(200)
         updates == ["initial", "initial", "initial", "initial", "initial", "add", "change", "remove"]
+        cleanup:
+        changeFeed.stopFeed()
     }
 
     def "react on any new document"() {
@@ -121,6 +131,8 @@ class ReactionTests extends RethinkDBNinjaTest {
         then:
         sleep(200)
         news == ["initial", "initial", "initial", "initial", "initial", "add"]
+        cleanup:
+        changeFeed.stopFeed()
     }
 
     def "react on states"() {
@@ -132,6 +144,8 @@ class ReactionTests extends RethinkDBNinjaTest {
         expect:
         sleep(100)
         states == ["initializing", "ready"]
+        cleanup:
+        changeFeed.stopFeed()
     }
 
 }

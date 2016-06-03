@@ -63,44 +63,9 @@ class AsyncChangeFeed {
     }
 
     def startFeed() {
-        def dbConn = connectionFactory()
-        Thread.start {
-            def cursor = changeFeed.run(dbConn)
-            for(feedItem in cursor) {
-                def handler = typeHandlerMap.get(feedItem["type"])
-                def updated = false
-                switch(feedItem["type"]) {
-                    case "add":
-                    case "change":
-                    case "initial":
-                        if(handler != null)
-                            handler(feedItem["new_val"], feedItem["old_val"])
-                        updated = true
-                        break;
-                    case "remove":
-                        if(handler != null)
-                            handler(feedItem["old_val"])
-                        updated = true
-                        break;
-                    case "state":
-                        if(handler != null)
-                            handler(feedItem["state"])
-                        break;
-                }
-                // document initialized, added, changed or removed
-                if(updated) {
-                    def updateHandler = typeHandlerMap.get "update"
-                    if(updateHandler != null)
-                        updateHandler(feedItem["type"], feedItem["new_val"], feedItem["old_val"])
-                }
-                // new document added
-                if(feedItem["type"] == "initial" || feedItem["type"] == "add") {
-                    def newHandler = typeHandlerMap.get "new"
-                    if(newHandler != null)
-                        newHandler(feedItem["type"], feedItem["new_val"])
-                }
-            }
-        }
+        def thread = new ChangeFeedThread(typeHandlerMap, connectionFactory(), changeFeed)
+        thread.start()
+        return thread
     }
 
 }
