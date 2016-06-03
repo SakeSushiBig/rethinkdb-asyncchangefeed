@@ -11,15 +11,19 @@ class AsyncChangeFeed {
     Closure connectionFactory
     Map<String, Closure> typeHandlerMap = new ConcurrentHashMap<>()
 
-    def AsyncChangeFeed(ReqlExpr query, Closure connFac) {
-        // create change feeed from query
-        if(query == null)
+    def AsyncChangeFeed(ReqlExpr query, Closure connFac, includeInitial = true, squash = true) {
+        this(query.changes(), connFac, includeInitial, squash)
+    }
+
+    def AsyncChangeFeed(Changes changes, Closure connFac, includeInitial = true, squash = true) {
+        // create change feed from query
+        if(changes == null)
             throw new IllegalArgumentException("cannot create change feed from null query")
-        changeFeed = query.changes()
-                .optArg("include_initial", true)
+        changeFeed = changes
+                .optArg("include_initial", includeInitial)
+                .optArg("squash", squash)
                 .optArg("include_states", true)
                 .optArg("include_types", true)
-                .optArg("squash", true)
         // set connection factory
         if(connFac == null)
             throw new IllegalArgumentException("connection factory must not be null")
